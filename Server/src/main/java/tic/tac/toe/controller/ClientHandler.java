@@ -36,7 +36,6 @@ public class ClientHandler extends Thread {
             Cell[][] field = gameService.createField();
             LOGGER.info("Create Field");
             outputStream.writeObject(new StartFieldDto(field, CellState.getOtherState(serverPlayState)));
-            LOGGER.info("");
             CellState firstPlay = (CellState) inputStream.readObject();
             boolean endGame = false;
             boolean myTurn = firstPlay.equals(serverPlayState);
@@ -63,6 +62,8 @@ public class ClientHandler extends Thread {
                 }
                 myTurn = !myTurn;
             }
+            socket.close();
+            LOGGER.info("Close connection with client: {}:{}", socket.getInetAddress(), socket.getPort());
         } catch (Exception e) {
             LOGGER.error(e.getMessage());
         }
