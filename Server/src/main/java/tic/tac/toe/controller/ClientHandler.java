@@ -3,6 +3,7 @@ package tic.tac.toe.controller;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 import java.util.StringJoiner;
 
 import tic.tac.toe.constant.CellState;
@@ -29,7 +30,7 @@ public class ClientHandler extends Thread {
     public void run() {
         try(ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
             ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream())) {
-            LOGGER.info("Start to handle");
+            LOGGER.info("Start to handle client {}:{}", socket.getInetAddress(), socket.getPort());
             CellState serverPlayState = gameService.getRandomState();
             LOGGER.info("Server state: {}", serverPlayState);
 
@@ -46,6 +47,7 @@ public class ClientHandler extends Thread {
                     final CellState cellState = gameService.checkGameFin(field);
                     FieldDto dto = new FieldDto(field, ResponseAnswer.whoWins(cellState));
                     outputStream.writeObject(dto);
+                    LOGGER.debug("My turn field state: {}", Arrays.deepToString(field));
                     if(!dto.getGameState().equals(ResponseAnswer.GAME_CONTINUE)) {
                         endGame = true;
                         LOGGER.info("I win client {}:{}", socket.getInetAddress(), socket.getPort());
@@ -53,6 +55,7 @@ public class ClientHandler extends Thread {
                 }
                 else {
                     FieldDto dto = (FieldDto) inputStream.readObject();
+                    LOGGER.debug("Field state after client`s move: {}", Arrays.deepToString(field));
                     if(!dto.getGameState().equals(ResponseAnswer.GAME_CONTINUE)) {
                         LOGGER.info("I lost to client: {}:{}", socket.getInetAddress(), socket.getPort());
                         endGame = true;
